@@ -1,0 +1,3 @@
+FROM microsoft/powershell
+Run powershell -Command Install-Module -Name AWSPowerShell.NetCore -Force
+
