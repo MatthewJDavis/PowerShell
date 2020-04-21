@@ -26,6 +26,10 @@ function Get-MDSSLCertificateExpiry {
     )
     
     begin {
+        if($PSEdition -ne 'Desktop'){
+            Write-Output 'Desktop PowerShell required'
+            break
+        }
     }
     
     process {
