@@ -1,0 +1,17 @@
+name: Lint
+
+on:
+  push:
+    branches:
+    - master
+
+jobs:
+  build:
+
+    runs-on: windows-2019
+
+    steps:
+    - uses: actions/checkout@v1
+    - name: Analyse scripts with PSScriptAnalyzer
+      run: .\build.ps1 -Task 'Analyse'
+      shell: powershell
