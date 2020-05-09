@@ -1,16 +1,16 @@
+[Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "")]
 #Needs New-MDADUser imported from my AD tools module
-
 $UserList = Import-Csv -Path .\users.csv
 
-$UserListSecure = foreach($user in $UserList){
+$UserListSecure = foreach ($user in $UserList) {
     [pscustomobject]@{
         FirstName = $user.firstname
-        Surname = $user.surname
-        Password = ConvertTo-SecureString -String $user.Password -AsPlainText -Force
+        Surname   = $user.surname
+        Password  = ConvertTo-SecureString -String $user.Password -AsPlainText -Force
     }
 }
 
-foreach($user in $UserListSecure){
+foreach ($user in $UserListSecure) {
     New-MDADUser -FirstName $user.firstname -Surname $user.surname -Password $user.password
 }
 

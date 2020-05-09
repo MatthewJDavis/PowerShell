@@ -11,7 +11,7 @@
    Update-Sysinternals -Path C:\Users\Matt\OneDrive\Tools\sysinternals
    Downloads the sysinternals tools to a user's OneDrive
 #>
-function Update-Sysinternals {
+function Update-Sysinternal {
     [CmdletBinding()]
     param (
         # Path to the directory for sysinternals tools
