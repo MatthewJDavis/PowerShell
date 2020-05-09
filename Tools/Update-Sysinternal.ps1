@@ -14,32 +14,25 @@
 function Update-Sysinternals {
     [CmdletBinding()]
     param (
-        # Path to the directory were sysinternals tools will be downloaded to 
-        [Parameter(Mandatory=$true)]      
+        # Path to the directory for sysinternals tools
+        [Parameter(Mandatory = $true)]      
         [string]
         $Path 
     )
     
     begin {
-            if (-not (Test-Path -Path $Path)){
+        if (-not (Test-Path -Path $Path)) {
             Throw "The Path $_ does not exist"
-        } else {
-            $true
         }
-        
-            $uri = 'https://live.sysinternals.com/'
-            $sysToolsPage = Invoke-WebRequest -Uri $uri
-            
+        $uri = 'https://live.sysinternals.com/'
+        $sysToolsPage = Invoke-WebRequest -Uri $uri  
     }
     
     process {
         # create dir if it doesn't exist    
-       
         Set-Location -Path $Path
-
-        $sysTools = $sysToolsPage.Links.innerHTML | Where-Object -FilterScript {$_ -like "*.exe" -or $_ -like "*.chm"} 
-
-        foreach ($sysTool in $sysTools){
+        $sysTools = $sysToolsPage.Links.innerHTML | Where-Object -FilterScript { $_ -like "*.exe" -or $_ -like "*.chm" } 
+        foreach ($sysTool in $sysTools) {
             Invoke-WebRequest -Uri "$uri/$sysTool" -OutFile $sysTool
         }
     } #process
