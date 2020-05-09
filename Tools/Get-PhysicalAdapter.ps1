@@ -12,27 +12,32 @@ Get-PhysicalAdapter -ComputerName localhost
 Get-PhysicalAdapter -ComputerName server-1
 #>
 function Get-PhysicalAdapter {
-  [CmdletBinding()]
-  Param
-  (
-    [Parameter(Mandatory = $true,
-      ValueFromPipelineByPropertyName = $true,
-      Position = 0)]
-    [Alias('hostname')]
-    [string[]]$ComputerName
-  )
+    [CmdletBinding()]
+    Param
+    (
+        [Parameter(ValueFromPipelineByPropertyName = $true,
+            Position = 0)]
+        [Alias('hostname')]
+        [string[]]$ComputerName = $env:COMPUTERNAME
+    )
 
-  Begin {
-    Write-Verbose "Connecting to $ComputerName"
-  }
-  Process {
-    Get-WmiObject  win32_networkadapter -ComputerName $ComputerName |
-      Where-Object -FilterScript {$_.PhysicalAdapter} |
-      Select-Object MACAddress, AdapterType, DeviceID, Name, Speed
-  }
-  End {
-    Write-Verbose "Finished running command"
-  }
+    Begin {
+        Write-Verbose "Connecting to $ComputerName"
+    }
+    Process {
+        if ($ComputerName -eq $env:COMPUTERNAME -or $ComputerName -eq 'localhost') {
+            $cimQuery = Get-CimInstance -ClassName  win32_networkadapter 
+        } else {
+            $cimQuery = Get-CimInstance -ClassName  win32_networkadapter -ComputerName $ComputerName
+        }
+
+        $cimQuery |
+        Where-Object -FilterScript { $_.PhysicalAdapter } |
+        Select-Object MACAddress, AdapterType, DeviceID, Name, Speed
+    }
+    End {
+        Write-Verbose "Finished running command"
+    }
 }
 
 
