@@ -1,4 +1,5 @@
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "")]
+param() # need to surpress script analyser warning.
 #Needs New-MDADUser imported from my AD tools module
 $UserList = Import-Csv -Path .\users.csv
 
