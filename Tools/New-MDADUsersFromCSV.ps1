@@ -1,7 +1,15 @@
 [Diagnostics.CodeAnalysis.SuppressMessageAttribute("PSAvoidUsingConvertToSecureStringWithPlainText", "")]
-param() # need to surpress script analyser warning.
+    param (
+        [Parameter(Mandatory)]
+        [string]
+        $UserCSVPath
+    )
+
+if(-not (Test-Path $UserCSVPath)){
+    throw "$($UserCSVPath) not found"
+}
 #Needs New-MDADUser imported from my AD tools module
-$UserList = Import-Csv -Path .\users.csv
+$UserList = Import-Csv -Path $user
 
 $UserListSecure = foreach ($user in $UserList) {
     [pscustomobject]@{
