@@ -1,5 +1,7 @@
 function Start-DailyOnEC2 {
-    [CmdletBinding()]
+    [CmdletBinding(
+        SupportsShouldProcess,
+        ConfirmImpact = 'Medium')]
     <#
     .SYNOPSIS
         Turn on EC2 instances with a 'DailyOn' tag value of 'True'
@@ -23,7 +25,6 @@ function Start-DailyOnEC2 {
         [string]
         $Region = 'eu-west-1'
     )
-    
     begin {
         Set-DefaultAWSRegion -Region $Region
     }
@@ -34,8 +35,10 @@ function Start-DailyOnEC2 {
             # Only start instances that are not in a running state
             $ec2List | ForEach-Object {
                 if ($_.Instances.state.Name.Value -ne 'running') {
-                    Write-Output "Starting $($_.Instances.instanceid)"
-                    Start-EC2Instance $_.Instances.instanceid | Out-Null
+                    if ($PSCmdlet.ShouldProcess('Target')) {
+                        Write-Output "Starting $($_.Instances.instanceid)"
+                        Start-EC2Instance $_.Instances.instanceid | Out-Null
+                    }
                 } else {
                     Write-Output "$($_.Instances.instanceid) already running"
                 }

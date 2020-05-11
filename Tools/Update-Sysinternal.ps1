@@ -12,33 +12,35 @@
    Downloads the sysinternals tools to a user's OneDrive
 #>
 function Update-Sysinternal {
-    [CmdletBinding()]
+    [CmdletBinding(
+        SupportsShouldProcess,
+        ConfirmImpact = 'Medium'
+    )]
     param (
         # Path to the directory for sysinternals tools
-        [Parameter(Mandatory = $true)]      
+        [Parameter(Mandatory = $true)]
         [string]
-        $Path 
+        $Path
     )
-    
     begin {
+        if($PSVersionTable.PSEdition -ne 'Desktop') {
+            throw "$($PSVersionTable.PSEdition) not supported. Needs to run on Windows PowerShell."
+        }
         if (-not (Test-Path -Path $Path)) {
             Throw "The Path $_ does not exist"
         }
         $uri = 'https://live.sysinternals.com/'
-        $sysToolsPage = Invoke-WebRequest -Uri $uri  
+        $sysToolsPage = Invoke-WebRequest -Uri $uri
     }
-    
     process {
-        # create dir if it doesn't exist    
-        Set-Location -Path $Path
-        $sysTools = $sysToolsPage.Links.innerHTML | Where-Object -FilterScript { $_ -like "*.exe" -or $_ -like "*.chm" } 
+        $sysTools = $sysToolsPage.Links.innerHTML | Where-Object -FilterScript { $_ -like "*.exe" -or $_ -like "*.chm" }
         foreach ($sysTool in $sysTools) {
-            Invoke-WebRequest -Uri "$uri/$sysTool" -OutFile $sysTool
+            if($PSCmdlet.ShouldProcess($sysTool)) {
+                Invoke-WebRequest -Uri "$uri/$sysTool" -OutFile "$path/$sysTool"
+                Write-Output "Updating $($sysTool)"
+            }
         }
     } #process
+    end{
+    }
 }
-
-
-
-
-
