@@ -35,7 +35,7 @@ function Start-DailyOnEC2 {
             # Only start instances that are not in a running state
             $ec2List | ForEach-Object {
                 if ($_.Instances.state.Name.Value -ne 'running') {
-                    if ($PSCmdlet.ShouldProcess('Target')) {
+                    if ($PSCmdlet.ShouldProcess("$($_.Instances.state.Name.Value)")) {
                         Write-Output "Starting $($_.Instances.instanceid)"
                         Start-EC2Instance $_.Instances.instanceid | Out-Null
                     }
