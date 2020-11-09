@@ -4,18 +4,21 @@
 param (
     [Parameter()]
     [string]
-    $ReportPath = '/tmp/artifacts.html'
+    $ReportPath = '/tmp/artifacts.html',
+    [Parameter()]
+    [string]
+    $baseUri = 'http://localhost/artifactory/api/'
 )
 
-$baseUri = 'http://localhost/artifactory/api/'
+$baseUri = $baseUri
 $searchUri = $baseUri + 'search/artifact?name='
-$wordList = 'pem', 'password', 'credentials', 'creds', 'key', 'id_rsa', 'pfx'
+$wordList = 'pem', 'password', 'credentials', 'creds', 'key', 'id_rsa', 'pfx', 'ppk' , 'rdp'
 $resultList = [collections.generic.list[string]]::new()
 $artifactList = [collections.generic.list[psCustomObject]]::new()
 
 #region Search artifacts
 foreach ($word in $wordList) {
-    $query = $searchUri + '*.' + $word
+    $query = $searchUri + $word
 
     $result = Invoke-RestMethod -Method Get -Uri $query
 
@@ -37,15 +40,26 @@ foreach ($result in $resultList) {
     $propUri = $baseUri + 'storage/' + $result.Split('/')[-2] + '/' + $result.Split('/')[-1] + '?properties\[=x[, y]\]'
     $props = Invoke-RestMethod -Method Get -Uri $propUri
 
+    if($stats.lastDownloaded -gt 0){
+        $lastDownloaded = [System.DateTimeOffset]::FromUnixTimeMilliseconds($stats.lastDownloaded).DateTime
+    } else {
+        $lastDownloaded = 0
+    }
+    if($stats.remoteLastDownloaded -gt 0){
+        $remoteLastDownloaded = [System.DateTimeOffset]::FromUnixTimeMilliseconds($stats.lastDownloaded).DateTime
+    } else {
+        $remoteLastDownloaded = 0
+    }
+
     $artifactDetails = [PSCustomObject]@{
         path                 = $props.path
         repo                 = $props.repo
         createdBy            = $props.createdBy
         created              = $props.created
         downloadCount        = $stats.downloadCount
-        lastDownloaded       = $stats.lastDownloaded
+        lastDownloaded       = $lastDownloaded
         remoteDownloadCount  = $stats.remoteDownloadCount
-        remoteLastDownloaded = $stats.lastDownloaded
+        remoteLastDownloaded = $remoteLastDownloaded
         lastModified         = $props.lastModified
         modifiedBy           = $props.modifiedBy
         lastUpdated          = $props.lastUpdated
