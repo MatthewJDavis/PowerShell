@@ -40,6 +40,7 @@ foreach ($result in $resultList) {
     $propUri = $baseUri + 'storage/' + $result.Split('/')[-2] + '/' + $result.Split('/')[-1] + '?properties\[=x[, y]\]'
     $props = Invoke-RestMethod -Method Get -Uri $propUri
 
+    # Convert last time downloaded which is returned in milliseconds from the api.
     if($stats.lastDownloaded -gt 0){
         $lastDownloaded = [System.DateTimeOffset]::FromUnixTimeMilliseconds($stats.lastDownloaded).DateTime
     } else {
