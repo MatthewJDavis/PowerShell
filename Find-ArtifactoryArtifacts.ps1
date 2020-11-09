@@ -10,9 +10,8 @@ param (
     $baseUri = 'http://localhost/artifactory/api/'
 )
 
-$baseUri = $baseUri
 $searchUri = $baseUri + 'search/artifact?name='
-$wordList = 'pem', 'password', 'credentials', 'creds', 'key', 'id_rsa', 'pfx', 'ppk' , 'rdp'
+$wordList = '.pem', 'password', 'credentials', 'creds', 'key', 'id_rsa', '.pfx', '.ppk' , 'rdp'
 $resultList = [collections.generic.list[string]]::new()
 $artifactList = [collections.generic.list[psCustomObject]]::new()
 
@@ -32,41 +31,56 @@ foreach ($word in $wordList) {
 
 #region Artifact details
 foreach ($result in $resultList) {
+    $stats = $null
+    $props = $null
+    
     # Artifact stats
     $statUri = $baseUri + 'storage/' + $result.Split('/')[-2] + '/' + $result.Split('/')[-1] + '?stats'
-    $stats = Invoke-RestMethod -Method Get -Uri $statUri
+    try {
+        $stats = Invoke-RestMethod -Method Get -Uri $statUri
+    }
+    catch {
+        $_.Exception.Response.StatusDescription
+    }
 
     # Artifact properties
     $propUri = $baseUri + 'storage/' + $result.Split('/')[-2] + '/' + $result.Split('/')[-1] + '?properties\[=x[, y]\]'
-    $props = Invoke-RestMethod -Method Get -Uri $propUri
-
-    # Convert last time downloaded which is returned in milliseconds from the api.
-    if($stats.lastDownloaded -gt 0){
-        $lastDownloaded = [System.DateTimeOffset]::FromUnixTimeMilliseconds($stats.lastDownloaded).DateTime
-    } else {
-        $lastDownloaded = 0
+    try {
+        $props = Invoke-RestMethod -Method Get -Uri $propUri
     }
-    if($stats.remoteLastDownloaded -gt 0){
-        $remoteLastDownloaded = [System.DateTimeOffset]::FromUnixTimeMilliseconds($stats.lastDownloaded).DateTime
-    } else {
-        $remoteLastDownloaded = 0
+    catch {
+        $_.Exception.Response.StatusDescription
     }
 
-    $artifactDetails = [PSCustomObject]@{
-        path                 = $props.path
-        repo                 = $props.repo
-        createdBy            = $props.createdBy
-        created              = $props.created
-        downloadCount        = $stats.downloadCount
-        lastDownloaded       = $lastDownloaded
-        remoteDownloadCount  = $stats.remoteDownloadCount
-        remoteLastDownloaded = $remoteLastDownloaded
-        lastModified         = $props.lastModified
-        modifiedBy           = $props.modifiedBy
-        lastUpdated          = $props.lastUpdated
-        uri                  = $stats.uri
+    if ($null -ne $stats -and $props) {
+        # Convert last time downloaded which is returned in milliseconds from the api.
+        if ($stats.lastDownloaded -gt 0) {
+            $lastDownloaded = [System.DateTimeOffset]::FromUnixTimeMilliseconds($stats.lastDownloaded).DateTime
+        } else {
+            $lastDownloaded = 0
+        }
+        if ($stats.remoteLastDownloaded -gt 0) {
+            $remoteLastDownloaded = [System.DateTimeOffset]::FromUnixTimeMilliseconds($stats.lastDownloaded).DateTime
+        } else {
+            $remoteLastDownloaded = 0
+        }
+
+        $artifactDetails = [PSCustomObject]@{
+            path                 = $props.path
+            repo                 = $props.repo
+            createdBy            = $props.createdBy
+            created              = $props.created
+            downloadCount        = $stats.downloadCount
+            lastDownloaded       = $lastDownloaded
+            remoteDownloadCount  = $stats.remoteDownloadCount
+            remoteLastDownloaded = $remoteLastDownloaded
+            lastModified         = $props.lastModified
+            modifiedBy           = $props.modifiedBy
+            lastUpdated          = $props.lastUpdated
+            uri                  = $stats.uri
+        }
+        $artifactList.Add($artifactDetails)
     }
-    $artifactList.Add($artifactDetails)
 }
 #endregion Artifact details
 
