@@ -35,7 +35,7 @@ foreach ($result in $resultList) {
     $props = $null
     
     # Artifact stats
-    $statUri = $baseUri + 'storage/' + $result.Split('/')[-2] + '/' + $result.Split('/')[-1] + '?stats'
+    $statUri = $result + '?stats'
     try {
         $stats = Invoke-RestMethod -Method Get -Uri $statUri
     }
@@ -44,7 +44,7 @@ foreach ($result in $resultList) {
     }
 
     # Artifact properties
-    $propUri = $baseUri + 'storage/' + $result.Split('/')[-2] + '/' + $result.Split('/')[-1] + '?properties\[=x[, y]\]'
+    $propUri = $result + '?properties\[=x[, y]\]'
     try {
         $props = Invoke-RestMethod -Method Get -Uri $propUri
     }
