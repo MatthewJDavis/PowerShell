@@ -1,8 +1,8 @@
-# Copy groups members from one AD group to the target AD group.
-$baseGroup = ''
-$targetGroup = ''
-$userList = Get-ADGroupMember -Identity $baseGroup
+# Copy groups members from one AD group to another AD group.
+$sourceGroup = ''
+$destinationGroup = ''
+$userList = Get-ADGroupMember -Identity $sourceGroup
 
 foreach($user in $userList) {
-  Add-ADGroupMember -Identity $targetGroup -Members $user.samaccountname
+  Add-ADGroupMember -Identity $destinationGroup -Members $user.samaccountname
 }
